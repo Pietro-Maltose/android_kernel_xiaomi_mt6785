@@ -864,8 +864,11 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 	charToint(data, data_len, int_data, &outlen);
 
 	info = (struct mtk_pd_adapter_info *)adapter_dev_get_drvdata(dev);
-	if (info == NULL || info->tcpc == NULL)
+	if (info == NULL || info->tcpc == NULL) {
+		kfree(int_data);
+		kfree(vdm_data);
 		return MTK_ADAPTER_ERROR;
+	}
 
 	vdm_hdr = VDM_HDR(info->adapter_dev->adapter_svid, USBPD_VDM_REQUEST, cmd);
 	vdm_data->wait_resp = true;
@@ -879,6 +882,8 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 		rc = tcpm_dpm_send_custom_vdm(info->tcpc, vdm_data, &cb_data);//&tcp_dpm_evt_cb_null
 		if (rc < 0) {
 			chr_err("failed to send %d\n", cmd);
+			kfree(int_data);
+			kfree(vdm_data);
 			return rc;
 		}
 		break;
@@ -898,6 +903,8 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 		rc = tcpm_dpm_send_custom_vdm(info->tcpc, vdm_data, &cb_data);//&tcp_dpm_evt_cb_null
 		if (rc < 0) {
 			chr_err("failed to send %d\n", cmd);
+			kfree(int_data);
+			kfree(vdm_data);
 			return rc;
 		}
 		break;
@@ -914,6 +921,8 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 		rc = tcpm_dpm_send_custom_vdm(info->tcpc, vdm_data, &cb_data);//&tcp_dpm_evt_cb_null
 		if (rc < 0) {
 			chr_err("failed to send %d\n", cmd);
+			kfree(int_data);
+			kfree(vdm_data);
 			return rc;
 		}
 		break;
@@ -922,6 +931,7 @@ static int pd_request_vdm_cmd(struct adapter_device *dev,
 		break;
 	}
 	kfree(int_data);
+	kfree(vdm_data);
 	return rc;
 }
 
